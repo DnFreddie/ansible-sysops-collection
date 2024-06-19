@@ -1,0 +1,48 @@
+- name: Install and configure i3 window manager
+  hosts: localhost
+  become: yes
+  vars_files:
+    - vault.yml
+  vars:
+    user: exa
+    user_home: "/home/{{ user }}"
+    config_src: "/home/exa/env/nixconfig/dotfiles/"
+    config_dest: "{{ user_home }}/.config/"
+
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install i3 and necessary packages
+      apt:
+        become: true
+        name: "{{ item }}"
+        state: present
+      loop:
+        - i3
+        - i3status
+        - i3lock
+        - rofi
+        - feh
+        - picom
+        - dunst
+        - vifm 
+    - name: Copy configuration files
+      copy:
+        src: "{{ dotf }}/{{ item }}"
+        dest: "{{ user_home }}/{{ item }}"
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0644'
+        backup: false
+        force: true
+
+      loop:
+        - i3 
+        - dunst
+        - picom
+        - vifm 
+
+ 
