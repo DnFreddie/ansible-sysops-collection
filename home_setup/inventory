@@ -1,3 +1,6 @@
-[all]
+[home_machines]
+dnf
 proxy
+hypr
+
 

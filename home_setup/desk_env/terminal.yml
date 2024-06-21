@@ -1,10 +1,9 @@
 - name: Install and configure tmux and .bashrc
-  hosts: proxy
+  hosts: home_machines
   vars_files:
     - vault.yml
   vars:
-    ansible_user: "proxy"
-    user_home: "/home/{{ ansible_user }}"
+    user_home: "/home/{{ inventory_hostname }}"
     dotf: "/home/aura/Documents/nixconfig/dotfiles/"
 
   tasks:
@@ -12,8 +11,8 @@
       copy:
         src: "{{ dotf }}/{{ item }}"
         dest: "{{ user_home }}/{{ item }}"
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        owner: "{{ inventory_hostname }}"
+        group: "{{ inventory_hostname }}"
         mode: '0644'
         backup: false
         force: true
@@ -26,8 +25,8 @@
         - .vimrc
 
     - name: Install packages
-      become: true
-      dnf:
+      ansible.builtin.package:
+        become: true
         name: "{{ item }}"
         state: present
       loop:
@@ -39,8 +38,8 @@
       file:
         path: "{{ user_home }}/.tmux/plugins"
         state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        owner: "{{ inventory_hostname }}"
+        group: "{{ inventory_hostname }}"
         mode: '0755'
 
     - name: Clone tmux plugin manager (TPM) from GitHub

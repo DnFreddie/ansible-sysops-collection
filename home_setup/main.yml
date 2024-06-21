@@ -1,0 +1,9 @@
+- hosts: home_machines
+- name: install nix 
+  import_playbook: nix_setup/nixplay.yml
+
+- name: install tools
+  import_playbook: desk_env/terminal.yml 
+
+- name: install i3 
+  import_playbook: desk_env/i3play.yml

@@ -1,0 +1,38 @@
+- name: Install nix and install required flake package
+  hosts: home_machines
+  become: true
+  vars_files:
+    - vault.yml
+  vars:
+    nix_commands:
+      - "nix run /etc/nix/"
+  roles:
+    - role: danielrolls.nix
+
+  pre_tasks:
+    - name: Ensure /etc/nix directory exists
+      file:
+        path: /etc/nix
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Copy flake.nix and tools.nix files to /etc/nix/
+      copy:
+        src: "./{{ item }}"
+        dest: "/etc/nix/{{ item }}"
+        owner: root
+        group: root
+        mode: '0664'
+        backup: false
+        force: true
+      loop:
+        - flake.nix
+        - tools.nix
+
+    - name: Append line to nix.conf for experimental features
+      lineinfile:
+        path: /etc/nix/nix.conf
+        line: "experimental-features = nix-command flakes"
+
