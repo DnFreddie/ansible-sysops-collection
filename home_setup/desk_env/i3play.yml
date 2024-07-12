@@ -1,11 +1,8 @@
+---
 - name: Install and configure i3 window manager
   hosts: home_machines
   become: yes
-  vars_files:
-    - vault.yml
   vars:
-    user_home: "/home/{{ inventory_hostname }}"
-    config_src: "/home/exa/env/nixconfig/dotfiles/"
     config_dest: "{{ user_home }}/.config/"
 
   tasks:
@@ -25,8 +22,8 @@
         - vifm 
     - name: Copy configuration files
       copy:
-        src: "{{ dotf }}/{{ item }}"
-        dest: "{{ user_home }}/{{ item }}"
+        src: "{{ dotfiles }}/{{ item }}"
+        dest: "{{ config_dest }}"
         owner: "{{ inventory_hostname }}"
         group: "{{ inventory_hostname }}"
         mode: '0644'

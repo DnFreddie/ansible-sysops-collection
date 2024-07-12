@@ -1,52 +1,45 @@
-- name: Install and configure tmux and .bashrc
-  hosts: home_machines
-  vars_files:
-    - vault.yml
-  vars:
-    user_home: "/home/{{ inventory_hostname }}"
-    dotf: "/home/aura/Documents/nixconfig/dotfiles/"
+---
+- name: Copy configuration files
+  copy:
+    remote_src: true
+    src: "{{ dotfiles }}/{{ item }}"
+    dest: "{{ user_home }}/{{ item }}"
+    owner: "{{ inventory_hostname }}"
+    group: "{{ inventory_hostname }}"
+    mode: '0644'
+    backup: false
+    force: true
 
-  tasks:
-    - name: Copy configuration files
-      copy:
-        src: "{{ dotf }}/{{ item }}"
-        dest: "{{ user_home }}/{{ item }}"
-        owner: "{{ inventory_hostname }}"
-        group: "{{ inventory_hostname }}"
-        mode: '0644'
-        backup: false
-        force: true
+  loop:
+    - .tmux.conf
+    - .bashrc
+    - .Xresources
+    - .inputrc
+    - .vimrc
 
-      loop:
-        - .tmux.conf
-        - .bashrc
-        - .Xresources
-        - .inputrc
-        - .vimrc
+- name: Install packages
+  become: true
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - tmux
+    - xterm
+    - vim
 
-    - name: Install packages
-      ansible.builtin.package:
-        become: true
-        name: "{{ item }}"
-        state: present
-      loop:
-        - tmux
-        - xterm
-        - vim
+- name: Create directory for tmux plugins
+  file:
+    path: "{{ user_home }}/.tmux/plugins"
+    state: directory
+    owner: "{{ inventory_hostname }}"
+    group: "{{ inventory_hostname }}"
+    mode: '0755'
 
-    - name: Create directory for tmux plugins
-      file:
-        path: "{{ user_home }}/.tmux/plugins"
-        state: directory
-        owner: "{{ inventory_hostname }}"
-        group: "{{ inventory_hostname }}"
-        mode: '0755'
-
-    - name: Clone tmux plugin manager (TPM) from GitHub
-      git:
-        repo: https://github.com/tmux-plugins/tpm
-        dest: "{{ user_home }}/.tmux/plugins/tpm"
-        clone: true
-        update: false
-        version: master
+- name: Clone tmux plugin manager (TPM) from GitHub
+  git:
+    repo: https://github.com/tmux-plugins/tpm
+    dest: "{{ user_home }}/.tmux/plugins/tpm"
+    clone: true
+    update: false
+    version: master
 

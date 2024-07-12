@@ -1,0 +1,32 @@
+- name: Install Guacamole and Docker 
+  hosts: home_machines
+  vars: 
+    docker_dir: /home/{{ ansible_hostname }}/docker
+    docker_services:
+      - guacamole
+      - portainer
+  tasks:
+    - name: Create the docker dir 
+      file:
+        state: directory
+        path: "{{ docker_dir }}"
+         
+    - name: Copy the configuration
+      copy:
+        src: "{{ item }}"
+        dest: "{{ docker_dir }}"
+      loop: "{{ docker_services }}"
+      
+    - name: Create and start services
+      become: true
+      community.docker.docker_compose_v2:
+        project_src: "{{ docker_dir }}/{{ item }}"
+      loop: "{{ docker_services }}"
+      register: compose_output
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Show results
+      debug:
+        var: compose_output.results
+
