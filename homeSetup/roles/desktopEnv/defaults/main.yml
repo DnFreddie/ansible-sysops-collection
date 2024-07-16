@@ -1,0 +1,6 @@
+---
+vars:
+  user_home: "/home/{{ inventory_hostname }}"
+  git_repo: "{{ user_home }}/Desktop/nixconfig"
+  dotfiles: "{{ git_repo }}/dotfiles"
+

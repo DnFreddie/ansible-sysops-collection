@@ -1,0 +1,3 @@
+---
+# the name  of the docker directory it's going to create
+project_dir: "dockerCenter"

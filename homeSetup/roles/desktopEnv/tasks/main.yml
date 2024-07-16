@@ -1,0 +1,14 @@
+---
+- name: Clone backup branch
+  git:
+    repo: https://github.com/DnFreddie/nixconfig.git
+    dest: "{{ git_repo }}"
+    single_branch: yes
+    version: backup
+
+- name: Include terminal setup tasks
+  include_tasks: terminal.yml
+
+- name: Include i3 setup tasks
+  include_tasks: i3play.yml
+

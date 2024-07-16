@@ -1,4 +1,0 @@
-- hosts: home_machines
-- name: Setup Home
-  import_playbook: /home_setup/desk_env/setup.yml
-
