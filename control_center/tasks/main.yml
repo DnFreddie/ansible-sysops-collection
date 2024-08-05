@@ -1,0 +1,47 @@
+- block:
+    - name: Create a network for the containers
+      containers.podman.podman_network:
+        name: control-center
+        state: present
+
+    - name: Run Portainer container
+      containers.podman.podman_container:
+        name: portainer
+        image: docker.io/portainer/portainer-ce
+        restart_policy: always
+        ports:
+          - "8000:8000"
+          - "9000:9000"
+        volumes:
+          - "/var/lib/docker/volumes/portainer_data:/data"  
+        network: control-center
+        state: started
+
+    - name: Run Nginx Proxy Manager container
+      containers.podman.podman_container:
+        name: nginx
+        image: docker.io/jc21/nginx-proxy-manager:latest
+        restart_policy: always
+        ports:
+          - "80:80"   # Public HTTP Port
+          - "443:443" # Public HTTPS Port
+          - "81:81"   # Admin Web Port
+        volumes:
+          - "/var/lib/docker/volumes/nginx/data:/data"
+          - "/var/lib/docker/volumes/nginx/letsencrypt:/etc/letsencrypt"
+        network: control-center
+        state: started
+
+    - name: Run Guacamole container
+      containers.podman.podman_container:
+        name: guacamole
+        image: docker.io/jwetzell/guacamole
+        restart_policy: always
+        ports:
+          - "8080:8080"
+        volumes:
+          - "/var/lib/docker/volumes/guacamole:/config"  
+        network: control-center
+        state: started
+  become: true
+

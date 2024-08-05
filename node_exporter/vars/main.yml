@@ -1,0 +1,2 @@
+---
+node_exporter_tarball: "{{ node_exporter_url | basename | regex_replace('\\.tar\\.gz$', '') }}"

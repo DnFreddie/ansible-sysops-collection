@@ -1,0 +1,42 @@
+- name: Create a loki network for the containers
+  containers.podman.podman_network:
+    name: loki
+    state: present
+
+- name: Create a loki directory
+  file:
+    path: ~/.config/loki
+    state: directory
+
+- name: Copy configuration files with owner and permissions
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: ~/.config/loki/
+  loop: "{{ config_files }}"
+
+- name: Run Loki
+  containers.podman.podman_container:
+    name: loki
+    image: docker.io/grafana/loki:2.9.2
+    restart_policy: always
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - "{{ ansible_env.HOME }}/.config/loki/local-config.yaml:/etc/loki/local-config.yaml"  # Use bind mount
+
+    network: loki
+    ports:
+      - "3100:3100"
+    state: started
+
+- name: Run Promtail
+  containers.podman.podman_container:
+    name: promtail
+    image: docker.io/grafana/promtail:2.9.2
+    restart_policy: always
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - /var/log:/var/log
+      - "{{ ansible_env.HOME }}/.config/loki/promtail.yml:/etc/promtail/config.yml"
+    network: loki
+    state: started
+
