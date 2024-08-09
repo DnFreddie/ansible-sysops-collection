@@ -7,7 +7,11 @@ A role to set up Loki and Promtail via Podman (*but could be easly switched to d
 Requirements
 ------------
 
-This role only requires **Podman** but can be easily converted to Docker. Just literally swap `containers.podman.podman_container` with Docker.
+
+This role only requires Podman, but it can be easily converted to Docker. To do this, simply replace `containers.podman.podman_container` with the equivalent Docker module.
+
+Additionally, I changed the context of the files to `container_file_t`, which allows SELinux to permit these files to be used as volumes.
+
 
 Role Variables
 --------------

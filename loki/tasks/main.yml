@@ -8,10 +8,18 @@
     path: ~/.config/loki
     state: directory
 
+
 - name: Copy configuration files with owner and permissions
   ansible.builtin.copy:
     src: "{{ item }}"
     dest: ~/.config/loki/
+  loop: "{{ config_files }}"
+
+- name: Set SELinux context to allow running containers
+  sefcontext:
+    target: "{{ ansible_env.HOME }}/.config/loki/{{ item }}"
+    setype: container_file_t
+    state: present
   loop: "{{ config_files }}"
 
 - name: Run Loki
@@ -21,7 +29,7 @@
     restart_policy: always
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
-      - "{{ ansible_env.HOME }}/.config/loki/local-config.yaml:/etc/loki/local-config.yaml"  # Use bind mount
+      - "{{ ansible_env.HOME }}/.config/loki/local-config.yaml:/etc/loki/local-config.yaml:Z"  
 
     network: loki
     ports:
@@ -35,8 +43,8 @@
     restart_policy: always
     command: -config.file=/etc/promtail/config.yml
     volumes:
-      - /var/log:/var/log
-      - "{{ ansible_env.HOME }}/.config/loki/promtail.yml:/etc/promtail/config.yml"
+      - /var/log:/var/log:Z
+      - "{{ ansible_env.HOME }}/.config/loki/promtail.yml:/etc/promtail/config.yml:Z"
     network: loki
     state: started
 

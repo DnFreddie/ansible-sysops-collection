@@ -13,7 +13,7 @@
           - "8000:8000"
           - "9000:9000"
         volumes:
-          - "/var/lib/docker/volumes/portainer_data:/data"  
+          - "/var/lib/docker/volumes/portainer_data:/data:Z"  
         network: control-center
         state: started
 
@@ -27,8 +27,8 @@
           - "443:443" # Public HTTPS Port
           - "81:81"   # Admin Web Port
         volumes:
-          - "/var/lib/docker/volumes/nginx/data:/data"
-          - "/var/lib/docker/volumes/nginx/letsencrypt:/etc/letsencrypt"
+          - "/var/lib/docker/volumes/nginx/data:/data:Z"
+          - "/var/lib/docker/volumes/nginx/letsencrypt:/etc/letsencrypt:Z"
         network: control-center
         state: started
 
@@ -40,7 +40,7 @@
         ports:
           - "8080:8080"
         volumes:
-          - "/var/lib/docker/volumes/guacamole:/config"  
+          - "/var/lib/docker/volumes/guacamole:/config:Z"  
         network: control-center
         state: started
   become: true
