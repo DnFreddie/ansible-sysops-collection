@@ -1,6 +1,6 @@
 ---
 user_home: "/home/{{ inventory_hostname }}"
-git_repo: "{{ user_home }}/Desktop/nixconfig"
+git_repo: "{{ user_home }}/Desktop/.dotfiles"
 dotfiles: "{{ git_repo }}/dotfiles"
 config_dest: "{{ user_home }}/.config/"
 

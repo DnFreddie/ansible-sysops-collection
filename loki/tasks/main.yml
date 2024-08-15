@@ -15,12 +15,6 @@
     dest: ~/.config/loki/
   loop: "{{ config_files }}"
 
-- name: Set SELinux context to allow running containers
-  sefcontext:
-    target: "{{ ansible_env.HOME }}/.config/loki/{{ item }}"
-    setype: container_file_t
-    state: present
-  loop: "{{ config_files }}"
 
 - name: Run Loki
   containers.podman.podman_container:
