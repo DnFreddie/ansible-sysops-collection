@@ -59,7 +59,7 @@
 
     - name: Create sysconfig file for node_exporter
       file:
-        path: /etc/sysconfig/node_exporter  
+        path: /etc/sysconfig/node_exporter
         state: touch
         owner: node_exporter
         group: node_exporter
