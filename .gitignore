@@ -1,2 +1,4 @@
 vault.yml
 .vault_pass
+playbook.yaml
+inventory

@@ -1,32 +1,59 @@
+
+---
+- name: Initialize list for failed installations
+  set_fact:
+    failed_packages: []
+
 - name: Install i3 and necessary packages
   become: true
-  package:
-    name: "{{ item }}"
-    state: present
+  block:
+    - name: Install i3 and related packages
+      package:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - i3
+        - i3status
+        - i3lock
+        - rofi
+        - feh
+        - picom
+        - dunst
+      register: package_install_result
+      ignore_errors: true
+
+    - name: Add failed packages to list
+      set_fact:
+        failed_packages: "{{ failed_packages + [item.item] }}"
+      when: item.failed
+      loop: "{{ package_install_result.results }}"
+
+  rescue:
+    - name: Report that package installation failed
+      debug:
+        msg: "Error occurred while installing {{ item }}"
+      loop: "{{ package_install_result.results }}"
+      when: item.failed
+
+- name: Report failed installations
+  debug:
+    msg: "Packages failed to install: {{ failed_packages }}"
+  when: failed_packages | length > 0
+
+- name: Create symlinks 
+  file:
+    src: "{{ git_repo }}/{{ item }}"
+    dest: "{{ dot_config }}/{{ item }}"
+    owner: "{{ ansible_hostname }}"
+    group: "{{ ansible_hostname }}"
+    mode: '0755'
+    state: link
+    force: true
   loop:
     - i3
-    - i3status
-    - i3lock
+    - dunst
+    - picom
+    - vifm
+    - nvim
     - rofi
-    - feh
-    - picom
-    - dunst
-    - vifm 
-- name: Copy configuration files
-  copy:
-    remote_src: true
-    src: "{{ dotfiles }}/{{ item }}"
-    dest: "{{ config_dest }}"
-    owner: "{{ inventory_hostname }}"
-    group: "{{ inventory_hostname }}"
-    mode: '0755'
-    backup: false
-    force: true
-
-  loop:
-    - i3 
-    - dunst
-    - picom
-    - vifm 
-
 

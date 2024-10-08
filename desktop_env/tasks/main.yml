@@ -1,10 +1,9 @@
 ---
 - name: Clone backup branch
   git:
-    repo: https://github.com/DnFreddie/nixconfig.git
+    repo: "{{repo_url}}"
     dest: "{{ git_repo }}"
     single_branch: yes
-    version: backup
 
 - name: Include terminal setup tasks
   include_tasks: terminal.yml

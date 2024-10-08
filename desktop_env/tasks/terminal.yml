@@ -1,15 +1,13 @@
 ---
-- name: Copy configuration files
-  copy:
-    remote_src: true
-    src: "{{ dotfiles }}/{{ item }}"
-    dest: "{{ user_home }}/{{ item }}"
-    owner: "{{ inventory_hostname }}"
-    group: "{{ inventory_hostname }}"
+- name: Create symlinks for configuration files
+  file:
+    src: "{{ git_repo }}/{{ item }}"
+    dest: "{{ home_dir }}/{{ item }}"
+    owner: "{{ ansible_hostname }}"
+    group: "{{ ansible_hostname }}"
     mode: '0644'
-    backup: false
+    state: link
     force: true
-
   loop:
     - .tmux.conf
     - .bashrc
@@ -17,28 +15,54 @@
     - .inputrc
     - .vimrc
 
-- name: Install packages
+- name: List for failed installations
+  set_fact:
+    failed_packages: []
+
+- name: Install necessary packages
   become: true
-  package:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - tmux
-    - xterm
-    - vim
+  block:
+    - name: Install tmux, xterm, and vim
+      package:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - tmux
+        - xterm
+        - vim
+      register: package_install_result
+      ignore_errors: true
+
+    - name: Add failed packages to list
+      set_fact:
+        failed_packages: "{{ failed_packages + [item.item] }}"
+      when: item.failed
+      loop: "{{ package_install_result.results }}"
+
+  rescue:
+    - name: Report that package installation failed
+      debug:
+        msg: "Error occurred while installing {{ item }}"
+      loop: "{{ package_install_result.results }}"
+      when: item.failed
+
+- name: Report failed installations
+  debug:
+    msg: "The following packages failed to install: {{ failed_packages }}"
+  when: failed_packages | length > 0
 
 - name: Create directory for tmux plugins
   file:
-    path: "{{ user_home }}/.tmux/plugins"
+    path: "{{ home_dir }}/.tmux/plugins"
     state: directory
-    owner: "{{ inventory_hostname }}"
-    group: "{{ inventory_hostname }}"
+    owner: "{{ ansible_hostname }}"
+    group: "{{ ansible_hostname }}"
     mode: '0755'
 
 - name: Clone tmux plugin manager (TPM) from GitHub
   git:
     repo: https://github.com/tmux-plugins/tpm
-    dest: "{{ user_home }}/.tmux/plugins/tpm"
+    dest: "{{ home_dir }}/.tmux/plugins/tpm"
     clone: true
     update: false
     version: master

@@ -1,6 +1,8 @@
 ---
-user_home: "/home/{{ inventory_hostname }}"
-git_repo: "{{ user_home }}/Desktop/.dotfiles"
-dotfiles: "{{ git_repo }}/dotfiles"
-config_dest: "{{ user_home }}/.config/"
+home_dir: "{{ lookup('env', 'HOME') }}"
+dot_config: "{{ home_dir }}/.config/"
+
+repo_name:   "{{ repo_url.split('/')[-1].replace('.git', '') }}"
+git_repo: "{{ home_dir }}/{{repo_name}}"
+
 
