@@ -1,5 +1,6 @@
 ---
 - name: Create symlinks for configuration files
+  become: false
   file:
     src: "{{ git_repo }}/{{ item }}"
     dest: "{{ home_dir }}/{{ item }}"
@@ -7,12 +8,12 @@
     group: "{{ ansible_hostname }}"
     mode: '0644'
     state: link
+    follow: false
     force: true
   loop:
     - .tmux.conf
     - .bashrc
     - .Xresources
-    - .inputrc
     - .vimrc
 
 - name: List for failed installations
@@ -45,25 +46,27 @@
         msg: "Error occurred while installing {{ item }}"
       loop: "{{ package_install_result.results }}"
       when: item.failed
-
 - name: Report failed installations
   debug:
     msg: "The following packages failed to install: {{ failed_packages }}"
   when: failed_packages | length > 0
 
-- name: Create directory for tmux plugins
-  file:
-    path: "{{ home_dir }}/.tmux/plugins"
-    state: directory
-    owner: "{{ ansible_hostname }}"
-    group: "{{ ansible_hostname }}"
-    mode: '0755'
+- name: Install tmux plugin menager 
+  become: false 
+  block:
+  - name: Create directory for tmux plugins
+    file:
+      path: "{{ home_dir }}/.tmux/plugins"
+      state: directory
+      owner: "{{ ansible_hostname }}"
+      group: "{{ ansible_hostname }}"
+      mode: '0755'
 
-- name: Clone tmux plugin manager (TPM) from GitHub
-  git:
-    repo: https://github.com/tmux-plugins/tpm
-    dest: "{{ home_dir }}/.tmux/plugins/tpm"
-    clone: true
-    update: false
-    version: master
+  - name: Clone tmux plugin manager (TPM) from GitHub
+    git:
+      repo: https://github.com/tmux-plugins/tpm
+      dest: "{{ home_dir }}/.tmux/plugins/tpm"
+      clone: true
+      update: false
+      version: master
 

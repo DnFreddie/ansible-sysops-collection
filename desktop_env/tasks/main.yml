@@ -1,13 +1,22 @@
 ---
-- name: Clone backup branch
+- name: Clone DefnotFreddie dotifles
   git:
-    repo: "{{repo_url}}"
+    repo: "{{ repo_url }}"
+    depth: 1
     dest: "{{ git_repo }}"
     single_branch: yes
+  become: false
 
-- name: Include terminal setup tasks
+- name:  I3 setup tasks
+  include_tasks: i3play.yml
+
+- name: Terminal setup tasks
   include_tasks: terminal.yml
 
-- name: Include i3 setup tasks
-  include_tasks: i3play.yml
+- name: Nvim installation
+  include_tasks: nvim.yml
+
+- name: Succesfull Setup
+  debug:
+    msg: "The desktop environment has been set up successfully!"
 

@@ -1,4 +1,3 @@
-
 ---
 - name: Initialize list for failed installations
   set_fact:
@@ -41,19 +40,21 @@
   when: failed_packages | length > 0
 
 - name: Create symlinks 
+  become: false
   file:
+
     src: "{{ git_repo }}/{{ item }}"
     dest: "{{ dot_config }}/{{ item }}"
     owner: "{{ ansible_hostname }}"
     group: "{{ ansible_hostname }}"
     mode: '0755'
     state: link
+    follow: false
     force: true
   loop:
     - i3
     - dunst
     - picom
     - vifm
-    - nvim
     - rofi
 

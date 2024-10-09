@@ -1,0 +1,55 @@
+- name: Check if any nvim binary exists
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: nvim_binary_checks
+  loop: "{{ nvim_binaries }}"
+
+- name: Set nvim_install_needed fact
+  set_fact:
+    nvim_install_needed: "{{ nvim_binary_checks.results | map(attribute='stat.exists') | list | select('equalto', true) | list | length == 0 }}"
+
+- name: Ensure Neovim is installed
+  block:
+    - name: Download Neovim checksum file
+      get_url:
+        url: "{{ nvim_check_sum_url }}"
+        dest: "/tmp/nvim-checksum"
+        mode: '0440'
+
+    - name: Read checksum file
+      command: "cat /tmp/nvim-checksum"
+      register: checksum_content
+      changed_when: false
+
+
+    - name: Download Neovim binary file
+      get_url:
+        url: "{{ nvim_url }}"
+        dest: "/tmp/nvim-linux64.tar.gz"
+        checksum: "sha256:{{  checksum_content.stdout.split()[0]  }}"
+        mode: '0440'
+
+    - name: Unarchive Neovim binary
+      unarchive:
+        src: "/tmp/nvim-linux64.tar.gz"
+        dest: "/opt"
+        remote_src: yes
+        creates: "/opt/nvim-linux64"
+
+    - name: Create symbolic links for nvim
+      file:
+       src: "/opt/nvim-linux64/bin/nvim"
+       dest: "{{ item }}"
+       follow: false
+       state: link
+      loop: "{{ nvim_binaries }}"
+
+  become: true
+  when: nvim_install_needed | bool
+
+- name: Nvim already installed
+  debug:
+    msg: "Nvim already installed. Remove it before running this playbook."
+  when: not (nvim_install_needed | bool)
+
+
