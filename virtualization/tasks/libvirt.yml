@@ -1,0 +1,31 @@
+
+
+
+
+- name: Add the user to libvirt group
+  ansible.builtin.user:
+    name: "{{ ansible_user_id }}"
+    groups: "libvirt"
+    append: yes
+
+- name: Install necessary packages
+  block: 
+  - name: Install virt tools
+    ansible.builtin.dnf:
+      name: "{{ item }}"
+      state: present
+    loop: "{{  virt_tools  }}"
+    register: packages  
+
+  - name: Install the 'Development tools' package group
+    ansible.builtin.dnf:
+      name: '@Development tools'
+      state: present
+
+  - name: Restart and enable libvirtd service
+    ansible.builtin.systemd:
+      name: libvirtd
+      state: started
+      enabled: yes
+      daemon_reload: yes
+  become: true

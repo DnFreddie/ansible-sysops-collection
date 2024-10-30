@@ -9,3 +9,4 @@
 | [desktop_env](/desktop_env/README.md)  | Role that manages my home machines and environment. It provides all the tools that I use: nix, tmux, nvim, vim, Xterm, and i3. |
 | [control_center](/control_center/README.md)  | Installs and setups nginx proxy,guacamole,portainer |
 | [linkding](/linkding/README.md)  | Installs and setusps [linkding](https://github.com/sissbruecker/linkding)  trhough podman service|
+| [virutalization](/virtualization/README.md)  | Installs vagrant and libvirtd|

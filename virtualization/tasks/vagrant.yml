@@ -1,0 +1,18 @@
+- name: Install Vagrant
+  block:
+    - name: Add the HashiCorp repository for Vagrant
+      ansible.builtin.command:
+        cmd: dnf config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+
+    - name: Install Vagrant package
+      ansible.builtin.yum:
+        name: vagrant
+        state: present
+      register: vagrant_packages  
+  become: true
+
+- name: Install libvirt plugin for Vagrant
+  ansible.builtin.command:
+    cmd: vagrant plugin install vagrant-libvirt
+  become: false   
+

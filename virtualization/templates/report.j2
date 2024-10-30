@@ -1,0 +1,29 @@
+
+## Report date: {{ ansible_date_time.date }} at {{ ansible_date_time.time }}
+
+### Successful Installations
+The following packages were successfully installed:
+{% for package in successful_packages %}
+- {{ package }}
+{% endfor %}
+
+### Failed Installations
+The following packages failed to install:
+{% if failed_packages | length > 0 %}
+{% for package in failed_packages %}
+- {{ package }}
+{% endfor %}
+{% else %}
+None
+{% endif %}
+
+### Skipped Packages
+{% if skipped_packages | length > 0 %}
+{% for package in skipped_packages %}
+- {{ package }}
+{% endfor %}
+{% else %}
+None
+{% endif %}
+
+

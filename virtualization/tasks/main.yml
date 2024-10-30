@@ -1,0 +1,68 @@
+---
+- name: Check if virtualization is enabled
+  block:
+  - name: Check if CPU supports virtualization
+    ansible.builtin.command:
+      cmd: grep -E '(vmx|svm)' /proc/cpuinfo
+    register: virt_support
+
+  - name: Display virtualization capability
+    ansible.builtin.debug:
+      msg: >
+        Virtualization is {{ 'enabled' if virt_support.stdout != '' else 'NOT enabled' }} on host {{ inventory_hostname }}.
+    failed_when: virt_support.stdout == ''
+    when: virt_support.stdout != ''
+
+  - name: Abort if virtualization is not supported
+    ansible.builtin.fail:
+      msg: "Virtualization is NOT supported on this host. Aborting playbook execution."
+    when: virt_support.stdout == ''
+
+- name: Update the repos
+  block:
+    - name: Enable PowerTools repository (crb)
+      ansible.builtin.yum:
+        name: dnf-plugins-core
+        state: present
+
+    - name: Enable EPEL release
+      ansible.builtin.yum:
+        name: epel-release
+        state: present
+  become: true  
+
+- name: Install Libvirt
+  include_tasks: libvirt.yml
+
+- name: Install Vagrant
+  include_tasks: vagrant.yml
+
+
+- name: Generate the report
+  block:
+    - name: Set package lists based on installation results
+      set_fact:
+        successful_packages: "{{ packages.results | selectattr('changed', 'equalto', true) | map(attribute='item') | list }}"
+        skipped_packages: "{{ packages.results | selectattr('changed', 'equalto', false) | selectattr('failed', 'undefined') | map(attribute='item') | list }}"
+        failed_packages: "{{ packages.results | selectattr('failed', 'defined') | map(attribute='item') | list }}"
+
+    - name: Create the playbooks/raports directory on control node
+      ansible.builtin.file:
+        path: "{{ lookup('env', 'HOME') }}/playbooks/raports"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      become: false
+
+    - name: Generate installation report
+      ansible.builtin.template:
+        src: templates/report.j2
+        dest: "{{ lookup('env', 'HOME') }}/playbooks/raports/virtualization_report.md"
+        mode: '0644'
+      delegate_to: localhost
+      become: false
+
+- name: Successful Setup
+  ansible.builtin.debug:
+    msg: "All the virtualization components have been installed successfully."
+

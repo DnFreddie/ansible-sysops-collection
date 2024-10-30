@@ -1,0 +1,14 @@
+---
+# vars file for virtualization
+original_user: "{{ ansible_user_id }}"  
+virt_tools: 
+   - qemu-kvm 
+   - libvirt
+   - virt-manager
+   - virt-install
+   - virt-top
+   - libguestfs-tools
+   - bridge-utils
+   - virt-viewer
+   - libvirt-devel
+

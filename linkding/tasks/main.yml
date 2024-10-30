@@ -1,3 +1,10 @@
+---
+- name: Copy env file to a temporary location on the remote host
+  ansible.builtin.copy:
+    src: "env"
+    dest: "/tmp/linkding_env"
+    mode: '0644'
+
 - name: Create a Podman volume
   containers.podman.podman_volume:
     name: linkding_data
@@ -9,20 +16,20 @@
     image: "docker.io/sissbruecker/linkding:latest"
     state: started
     env: "{{ env_vars | items2dict }}"
-    env_file: "{{ role_path }}/files/env"
+    env_file: "/tmp/linkding_env"  
     ports:
       - "{{ container_port }}:{{ container_port }}"
     volumes:
-      - "linkding_data:/etc/linkding/data:Z"  
+      - "linkding_data:/etc/linkding/data:Z"
 
 - name: Check if the systemd service already exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ ansible_env.HOME }}/.config/systemd/user/container-{{ container_name }}.service"
   register: exist
 
 - block:
     - name: Create user service directory
-      file: 
+      ansible.builtin.file:
         path: "{{ ansible_env.HOME }}/.config/systemd/user/"
         state: directory
         mode: '0755'
@@ -33,16 +40,15 @@
         dest: "{{ ansible_env.HOME }}/.config/systemd/user/"
   when: not exist.stat.exists
 
-- name: Reload the systemd daemon
+- name: Reload the systemd daemon and start the service
   ansible.builtin.systemd:
     name: "container-{{ container_name }}"
     scope: user
     daemon_reload: true
-    state: started
     enabled: true
 
 - name: The linkding has been successfully installed
-  debug:
-    msg:
+  ansible.builtin.debug:
+    msg: 
       - "The installation of linkding has been successful. Check out http://localhost:{{ container_port }}/"
 

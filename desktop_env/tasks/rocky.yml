@@ -1,15 +1,6 @@
-
 ---
-- name: Setup repositories on Rocky Linux 9 
+- name: Setup repositories on Rocky Linux 9
   block:
-    - name: Check if the OS is Rocky Linux 9 and DNF is present
-      ansible.builtin.fail:
-        msg: "This playbook is designed only for Rocky Linux 9 with DNF."
-      when: not (ansible_facts['os_family'] == 'RedHat' and 
-                 ansible_facts['distribution'] == 'Rocky' and 
-                 ansible_facts['distribution_major_version'] == '9' and 
-                 ansible_facts['pkg_mgr'] == 'dnf')
-
     - name: Install EPEL repository
       ansible.builtin.yum:
         name: epel-release
@@ -21,9 +12,19 @@
         state: present
 
     - name: Enable CRB (PowerTools) repository
-      ansible.builtin.command: dnf config-manager --set-enabled crb
+      ansible.builtin.command:
+        cmd: dnf config-manager --set-enabled crb
 
-      
+    - name: Install the 'Development tools' package group
+      ansible.builtin.dnf:
+        name: "@Development tools"
+        state: present
+
+    - name: Install the 'Development tools' package group
+      ansible.builtin.dnf:
+        name: "@Container Management"
+        state: present
+
 
     - name: Ensure all installed repositories are enabled and up-to-date
       ansible.builtin.yum:
@@ -31,5 +32,9 @@
         state: latest
         update_cache: yes
 
-  become: true
+  when: 
+    - ansible_facts['os_family'] == 'RedHat'
+    - ansible_facts['distribution'] == 'Rocky'
+    - ansible_facts['distribution_major_version'] == '9'
+    - ansible_facts['pkg_mgr'] == 'dnf'
 
