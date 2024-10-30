@@ -1,0 +1,31 @@
+## Installation Summary
+
+## Report date: {{ ansible_date_time.date }} at {{ ansible_date_time.time }}
+
+### Failed Installations
+The following packages failed to install:
+{% if failed_packages | length > 0 %}
+{% for package in failed_packages %}
+- {{ package }}
+{% endfor %}
+{% else %}
+None
+{% endif %}
+
+### Symlinks Created
+The following symlinks were created:
+- `~/.config/i3` linked to `{{ git_repo }}/i3`
+- `~/.config/dunst` linked to `{{ git_repo }}/dunst`
+- `~/.config/picom` linked to `{{ git_repo }}/picom`
+- `~/.tmux.conf` linked to `{{ git_repo }}/.tmux.conf`
+- `~/.bashrc` linked to `{{ git_repo }}/.bashrc`
+- `~/.Xresources` linked to `{{ git_repo }}/.Xresources`
+- `~/.vimrc` linked to `{{ git_repo }}/.vimrc`
+- `~/.w3m` linked to `{{ git_repo }}/.w3m`
+
+### Additional Actions
+- Neovim was installed to `/opt/nvim-linux64` and symlinks were created for the `nvim` command.
+- The EPEL, CRB (PowerTools), and Remi repositories were enabled on the system.
+- The tmux plugin manager (TPM) was cloned to `~/.tmux/plugins/tpm`.
+
+

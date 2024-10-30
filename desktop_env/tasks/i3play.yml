@@ -14,8 +14,6 @@
         - i3
         - i3status
         - i3lock
-        - rofi
-        - feh
         - picom
         - dunst
       register: package_install_result
@@ -45,8 +43,8 @@
 
     src: "{{ git_repo }}/{{ item }}"
     dest: "{{ dot_config }}/{{ item }}"
-    owner: "{{ ansible_hostname }}"
-    group: "{{ ansible_hostname }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
     mode: '0755'
     state: link
     follow: false
@@ -55,6 +53,5 @@
     - i3
     - dunst
     - picom
-    - vifm
-    - rofi
+    - nvim
 

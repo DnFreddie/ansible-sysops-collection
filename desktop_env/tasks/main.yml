@@ -1,13 +1,14 @@
----
-- name: Clone DefnotFreddie dotifles
+- name: Setup Rocky 
+  include_tasks: rocky.yml
+
+- name: Clone DefnotFreddie dotfiles
   git:
     repo: "{{ repo_url }}"
     depth: 1
     dest: "{{ git_repo }}"
     single_branch: yes
-  become: false
 
-- name:  I3 setup tasks
+- name: I3 setup tasks
   include_tasks: i3play.yml
 
 - name: Terminal setup tasks
@@ -16,7 +17,26 @@
 - name: Nvim installation
   include_tasks: nvim.yml
 
-- name: Succesfull Setup
+- name: Toolbox installation 
+  include_tasks: toolbox.yml
+
+- name: Create the playbooks/raports directory on control node
+  ansible.builtin.file:
+    path: "{{ lookup('env', 'HOME') }}/playbooks/raports"
+    state: directory
+    mode: '0755'
+  delegate_to: localhost
+  become: false
+
+- name: Generate Playbook report
+  ansible.builtin.template:
+    src: templates/installation_raport.j2
+    dest: "{{ lookup('env', 'HOME') }}/playbooks/raports/dekstop_env_raport.md"
+    mode: '0644'
+  delegate_to: localhost
+  become: false
+
+- name: Successful Setup
   debug:
-    msg: "The desktop environment has been set up successfully!"
+    msg: "The desktop environment has been set up successfully! Check out /tmp/installation_report to watch changes\n chekcou the raport in installationraport.md"
 

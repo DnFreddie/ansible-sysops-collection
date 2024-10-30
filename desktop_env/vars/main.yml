@@ -1,11 +1,9 @@
 ---
 
-home_dir: "/home/{{ ansible_hostname }}"
-
+home_dir: "/home/{{ ansible_user_id }}"
 dot_config: "{{ home_dir }}/.config/"
-
-repo_name:   "{{ repo_url.split('/')[-1].replace('.git', '') }}"
-git_repo: "{{ home_dir }}/{{repo_name}}"
+repo_name: "{{ repo_url.split('/')[-1] | replace('.git', '') }}"
+git_repo: "{{ home_dir }}/{{ repo_name }}"
 
 nvim_url: "https://github.com/neovim/neovim/releases/download/stable/nvim-linux64.tar.gz"
 nvim_check_sum_url: "https://github.com/neovim/neovim/releases/download/stable/nvim-linux64.tar.gz.sha256sum"

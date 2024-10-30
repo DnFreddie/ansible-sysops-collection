@@ -4,8 +4,8 @@
   file:
     src: "{{ git_repo }}/{{ item }}"
     dest: "{{ home_dir }}/{{ item }}"
-    owner: "{{ ansible_hostname }}"
-    group: "{{ ansible_hostname }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
     mode: '0644'
     state: link
     follow: false
@@ -15,6 +15,7 @@
     - .bashrc
     - .Xresources
     - .vimrc
+    - .w3m
 
 - name: List for failed installations
   set_fact:
@@ -23,7 +24,7 @@
 - name: Install necessary packages
   become: true
   block:
-    - name: Install tmux, xterm, and vim
+    - name: Install tmux, xterm, w3m, and vim
       package:
         name: "{{ item }}"
         state: present
@@ -31,6 +32,8 @@
         - tmux
         - xterm
         - vim
+        - w3m
+        - dmenu
       register: package_install_result
       ignore_errors: true
 
@@ -58,8 +61,8 @@
     file:
       path: "{{ home_dir }}/.tmux/plugins"
       state: directory
-      owner: "{{ ansible_hostname }}"
-      group: "{{ ansible_hostname }}"
+      owner: "{{ ansible_user_id }}"
+      group: "{{ ansible_user_id }}"
       mode: '0755'
 
   - name: Clone tmux plugin manager (TPM) from GitHub

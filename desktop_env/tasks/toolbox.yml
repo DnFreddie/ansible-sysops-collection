@@ -1,0 +1,35 @@
+- name: Create .local/bin
+  file:
+    path: "{{ ansible_env.HOME }}/.local/bin"
+    state: directory
+    mode: '0755'
+
+- name: Install Go Archive
+  ansible.builtin.unarchive:
+    remote_src: true
+    src: "{{ go_archive }}"
+    dest: "{{ ansible_env.HOME }}/.local/"
+
+- name: Install toolbox
+  become: true
+  block:
+    - name: Install necessary tools
+      package:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - bat
+        - fzf
+        - podman-docker
+        - python3-pip
+        - nodejs 
+        - gcc
+      ignore_errors: true
+
+- name: install pynvim 
+  ansible.builtin.pip:
+    name: pynvim
+
+
+
+
