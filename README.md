@@ -1,6 +1,5 @@
 
 ## Diffrent ansible roles for different ansible occasions
-
 | Collection| Usage                                                                                                      |
 |---------------|------------------------------------------------------------------------------------------------------------|
 |  [prometheus](/prometheus/README.md) | Installs and sets up grafana prometheus|
@@ -10,3 +9,9 @@
 | [control_center](/control_center/README.md)  | Installs and setups nginx proxy,guacamole,portainer |
 | [linkding](/linkding/README.md)  | Installs and setusps [linkding](https://github.com/sissbruecker/linkding)  trhough podman service|
 | [virutalization](/virtualization/README.md)  | Installs vagrant and libvirtd|
+
+-----------------------------------------
+
+| Custom Module| Usage                                                                                                      |
+|---------------|------------------------------------------------------------------------------------------------------------|
+| [go_install](/library/go_install.py) | Installs using `go isntall` |
