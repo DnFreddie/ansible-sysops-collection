@@ -1,4 +1,3 @@
----
 - name: Create a Podman volume
   containers.podman.podman_volume:
     name: linkding_data
@@ -16,23 +15,22 @@
     volumes:
       - "linkding_data:/etc/linkding/data:Z"  
 
-# Systemd unit files for postgres container must exist
-- name: Check if the service already exists
+- name: Check if the systemd service already exists
   stat:
-    path: "~/.config/systemd/user/container-{{ container_name }}.service"
+    path: "{{ ansible_env.HOME }}/.config/systemd/user/container-{{ container_name }}.service"
   register: exist
 
 - block:
     - name: Create user service directory
       file: 
-        path: ~/.config/systemd/user/
+        path: "{{ ansible_env.HOME }}/.config/systemd/user/"
         state: directory
         mode: '0755'
 
     - name: Create systemd user service
       containers.podman.podman_generate_systemd:
         name: "{{ container_name }}"
-        dest: ~/.config/systemd/user/
+        dest: "{{ ansible_env.HOME }}/.config/systemd/user/"
   when: not exist.stat.exists
 
 - name: Reload the systemd daemon
