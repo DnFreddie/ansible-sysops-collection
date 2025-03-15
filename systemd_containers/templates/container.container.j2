@@ -1,0 +1,46 @@
+[Unit]
+Description={{ container.name }}
+Wants=network.target network-online.target
+
+[Container]
+Image={{ container.image }}
+
+{% if container.env_file is defined and container.env_file | length > 0 %}
+EnvironmentFile={{ container_path }}/.env
+{% endif %}
+
+{% if container.volumes is defined and container.volumes | length > 0 %}
+{% for v in container.volumes %}
+Volume={% if v.create | default(true) %}{{ container_path }}/{{ v.host }}{% else %}{{ v.host }}{% endif %}:{{ v.container }}:Z
+{% endfor %}
+{% endif %}
+
+
+{% if container.ports is defined and container.ports | length > 0 %}
+{% for p in container.ports %}
+PublishPort={{ p.host }}:{{ p.container }}
+{% endfor %}
+{% endif %}
+
+{% if container.exec is defined and container.exec | length > 0 %}
+Exec={{container.exec }} 
+{% endif %}
+
+[Service]
+Restart=always
+{% if container.volumes is defined and container.volumes | length > 0 -%}
+  {%- set to_create = [] -%}
+  {%- for v in container.volumes -%}
+    {%- if v.create | default(true) -%}
+      {%- set _ = to_create.append(container_path ~ '/' ~ v.host) -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- if to_create | length > 0 -%}
+ExecStartPre=/usr/bin/mkdir -p {{ to_create | join(' ') }}
+  {%- endif -%}
+{%- endif %}
+
+
+[Install]
+WantedBy=multi-user.target
+

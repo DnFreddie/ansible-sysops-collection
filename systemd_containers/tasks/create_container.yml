@@ -1,0 +1,46 @@
+- name: Process each container configuration
+  block:
+    - name: Set container directory facts
+      ansible.builtin.set_fact:
+        container_path: "{{ ansible_env['HOME'] }}/{{ container_dir }}/{{ container.name }}"
+        systemd_containers: "{{ ansible_env['HOME'] }}/.config/containers/systemd"
+
+    - name: Create container directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ container_path }}"
+        - "{{ systemd_containers }}"
+
+    - name: Copy env file to a temporary location
+      ansible.builtin.template:
+        src: "{{ container.env_file }}"
+        dest: "{{ container_path }}/.env"
+        mode: '0644'
+      when: container.env_file is defined and container.env_file | length > 0
+
+    - name: Create container definition file
+      ansible.builtin.template:
+        src: "container.container.j2"
+        dest: "{{ container_path }}/{{ container.name }}.container"
+        mode: '0644'
+
+    - name: Link the container file to systemd directory
+      ansible.builtin.file:
+        src: "{{ container_path }}/{{ container.name }}.container"
+        dest: "{{ systemd_containers }}/{{ container.name }}.container"
+        state: link
+
+
+  rescue:
+    - name: Log error if a task fails
+      ansible.builtin.debug:
+        msg: Failed to procsess {{ container.name }}
+
+  always:
+    - name: Continue execution even if previous tasks failed
+      ansible.builtin.debug:
+        msg: "Processing of container {{ container.name }} finished, moving to next..."
+

@@ -1,0 +1,14 @@
+galaxy_info:
+  author: DnFreddie
+  namespace: dnfreddie 
+  role_name: systemd_containers  
+  description: Run  podman containers as system services with quadlet
+  company: DefnotFreddie
+  license: MIT
+  min_ansible_version: 2.1
+  galaxy_tags:
+    - systemd 
+    - quadlet 
+    - podman
+dependencies: []
+

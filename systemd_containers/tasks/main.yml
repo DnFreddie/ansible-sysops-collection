@@ -1,0 +1,47 @@
+---
+- name: Check if Podman =>4.4 and not run as root 
+  block:
+    - name: Gather the package facts
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Check whether a package called podman is installed and is version >= 4.4
+      ansible.builtin.assert:
+        that:
+          - "'podman' in ansible_facts.packages"
+          - "ansible_facts.packages['podman'] | length > 0"
+          - "ansible_facts.packages['podman'][0].version is version('4.4', '>=')"
+        msg: >
+          Podman must be installed and be version >= 4.4, but the current version is 
+          {{ ansible_facts.packages['podman'][0].version | default('not installed') }}
+
+    - name: Asert not runnig as root 
+      ansible.builtin.assert:
+        that:
+          - "ansible_user_id != 'root'"
+        msg: This playbook is for the user contaienrs only 
+
+- name: Confirm container installation
+  ansible.builtin.debug:
+    msg: "The installation of container {{ item.name }} has been successful."
+  loop: "{{ containers }}"
+
+- name: Process each container configuration
+  ansible.builtin.include_tasks: create_container.yml
+  loop: "{{ containers }}"
+  loop_control:
+    loop_var: container
+  tags: test
+
+- name: Reload systemd daemon once
+  ansible.builtin.systemd:
+    daemon_reload: true
+    scope: user
+
+- name: Start container services
+  ansible.builtin.systemd:
+    name: "{{ item.name }}"
+    scope: user
+    state: started
+  loop: "{{ containers }}"
+

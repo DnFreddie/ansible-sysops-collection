@@ -1,0 +1,49 @@
+- name: Converge
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Podman
+      ansible.builtin.package:
+        name: podman
+        state: present
+
+    - name: Create a new user
+      ansible.builtin.user:
+        name: test
+        shell: /bin/bash
+        append: true
+        create_home: true
+
+- name: Deploy Linkding container as user test
+  hosts: all
+  become: true
+  become_user: test
+  vars:
+    containers:
+      - name: linkding
+        env_file: "env.j2"
+        image: docker.io/sissbruecker/linkding:latest
+        ports:
+          - { host: "9090", container: "9090" }
+        volumes:
+          - { host: "data", container: "/app/data" }
+
+      - name: adminer
+        image: docker.io/library/adminer:latest
+        ports:
+          - { host: "8081", container: "8080" }
+
+      - name: nginx
+        image: docker.io/library/nginx:alpine
+        ports:
+          - { host: "80", container: "80" }
+        volumes:
+          - { host: "nginx-html", container: "/usr/share/nginx/html" }
+
+      - name: busybox
+        image: docker.io/library/busybox:latest
+        command: "sleep 3600"
+
+  roles:
+    - systemd_containers
+

@@ -1,4 +1,6 @@
 ---
+container_dir: Containers
+env_file: "env.j2"
 user_name: placeholder
 user_password: password
 db_user : linkdin
