@@ -1,0 +1,4 @@
+---
+prometheus_url: "https://github.com/prometheus/prometheus/releases/latest/download/prometheus-linux-amd64.tar.gz"
+
+
