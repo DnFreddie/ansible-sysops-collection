@@ -31,7 +31,17 @@
   loop: "{{ containers }}"
   loop_control:
     loop_var: container
+
+- name: Enable Lingering
   tags: test
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/logind.conf
+    backrefs: yes
+    regexp: '^(KillExcludeUsers=(?!.*\b{{ ansible_user_id }}\b)(.*))$'
+    line: '\g<1> {{ ansible_user_id }}'
+    create: yes
+  when: linger | bool
+
 
 - name: Reload systemd daemon once
   ansible.builtin.systemd:
@@ -44,4 +54,3 @@
     scope: user
     state: started
   loop: "{{ containers }}"
-

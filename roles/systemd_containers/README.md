@@ -1,70 +1,53 @@
-Linkding
+systemd_containers
 =========
-
-Install the podman container with [linkding](https://github.com/sissbruecker/linkding) instance that uses `postgres`
+Run exisitg podman images as systemd user serivces 
+with quadlet
 
 Requirements
 ------------
+podman >= 4.4
 
-Podman
 
 Role Variables
 --------------
-This are the defualts
-
-```yml
-# Name and password of the admin user
-user_name: placeholder
-user_password: password
-# Name and password for db user
-db_user : linkdin
-db_password : passwd
-# Container networking
-host: localhost
-container_port: 9090
-```
-Other varaibles
-
 ```yaml
-container_name: linkding
-env_vars:
-  - { key: "LD_SUPERUSER_NAME", value: "{{ user_name }}" }
-  - { key: "LD_SUPERUSER_PASSWORD", value: "{{ user_password }}" }
-  - { key: "LD_DB_USER", value: "{{ db_user }}" }
-  - { key: "LD_DB_PASSWORD", value: "{{ db_password }}" }
-  - { key: "LD_DB_HOST", value: "{{ host }}" }
-  - { key: "LD_HOST_PORT", value: "{{ container_port }}" }
+# Should the user  linger
+linger: false
+# Base directory for container configuration
+container_dir: Containers  # ~/Containers
+# This is an array of the containers u want to create 
+containers:
+  - name: linkding
+    env_file: "env.j2"  # Jinja2 template for environment variables
+    image: docker.io/sissbruecker/linkding:latest
+    ports:
+      - host: "9090"
+        container: "9090"
+    volumes:
+      - host: "data"
+        container: "/app/data"
 
+# For local usage the image has to be already build
+  - name: mkdocs
+    image: localhost/notes_mkdocs
+    ports:
+      - host: "8000"
+        container: "8000"
+    volumes:
+      - host: "/home/aura/github.com/DnFreddie/Notes/mkdocs.yml"
+        container: "/app/mkdocs.yml"
+        create: false
+      - host: "/home/aura/github.com/DnFreddie/Notes/content/"
+        container: "/app/docs"
+        create: false
+    exec: serve --dev-addr=0.0.0.0:8000
 ```
 
 
-
-
-Dependencies
-------------
-Podman
-
-Example Playbook
-----------------
-```yaml
-
-- name: Deploy Linkeding Application
-  hosts: all
-  become: false
-  roles:
-    - { role: linkding,
-        user_name: "placeholder",
-        user_password : "password",
-        db_user: linkdin,
-        db_password: "password" ,
-        host: localhost,}
-
-```
 
 License
 -------
-
-BSD
+MIT
 
 Author Information
 ------------------

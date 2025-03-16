@@ -19,6 +19,7 @@
   become: true
   become_user: test
   vars:
+    linger: true
     containers:
       - name: linkding
         env_file: "env.j2"

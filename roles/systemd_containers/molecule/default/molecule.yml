@@ -20,7 +20,3 @@ provisioner:
   playbooks:
     converge: ../../tests/test.yml
     verify : ../../tests/verify.yml
-  env:
-    ANSIBLE_ROLES_PATH: "/home/aura/github.com/DnFreddie/roles"
-
-
