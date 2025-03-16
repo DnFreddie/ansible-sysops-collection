@@ -14,13 +14,20 @@ platforms:
     pre_build_image: true
     user: "test"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
+  - name: ubuntu
+    image: docker.io/geerlingguy/docker-${MOLECULE_DISTRO:-ubuntu2204}-ansible:${MOLECULE_TAG:-latest}
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    user: "test"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
 provisioner:
   name: ansible
   log: true
   playbooks:
     converge: ../../tests/test.yml
     verify : ../../tests/verify.yml
-  env:
-    ANSIBLE_ROLES_PATH: "/home/aura/github.com/DnFreddie/roles"
 
 

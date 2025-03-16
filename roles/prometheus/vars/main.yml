@@ -1,3 +1,2 @@
 ---
-prometheus_tarball: "{{ prometheus_url | basename | regex_replace('\\.tar\\.gz$', '') }}"
 

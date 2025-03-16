@@ -1,15 +1,17 @@
 prometheus
 =========
-
-Installs and setups prometheus
+Installs and setups prometheus as a service
+To test run `molecule test`
 
 Role Variables
 --------------
-
-The url to the offical prometheus release (*2.25.0*)
-```yml
-prometheus_url: "https://github.com/prometheus/prometheus/releases/download/v2.25.0/prometheus-2.25.0.linux-amd64.tar.gz"
-
+By default it uses the latest release
+```yaml
+prom_url: "https://api.github.com/repos/prometheus/prometheus/releases/latest"
+prom_config: "/etc/prometheus.yml"
+prom_dir: "/opt/prometheus"
+prom_port: 9090
+prom_data: "/opt/prometheus/data"
 ```
 Dependencies
 ------------
@@ -18,13 +20,12 @@ None
 
 Example Playbook
 ----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
+With the current configuration u have to run is as root 
 ```yml
 - hosts: servers
+  become: true
   roles:
-     - { role: prometheus, prometheus_url: "url" }
+     -  role: prometheus
 ```
 
 License

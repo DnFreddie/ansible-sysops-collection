@@ -1,74 +1,58 @@
-- block: 
+---
+- name: Setup Prometheus
+  block:
+    - name: Create a group for Prometheus
+      ansible.builtin.group:
+        name: prometheus
+        system: yes
+
     - name: Make a user for Prometheus
-      user:
+      ansible.builtin.user:
         name: prometheus
         shell: /sbin/nologin
-        system: true
+        system: yes
         create_home: no
         group: prometheus  
 
-    - name: Create a group for Prometheus
-      group:
-        name: prometheus
-        system: true
-
-    - name: Check if Prometheus binary exists
-      stat:
-        path: /opt/prometheus/prometheus
-      register: binary
-
-    - block:
-        - name: Unarchive a file that needs to be downloaded 
-          unarchive:
-            src: "{{ prometheus_url }}"
-            dest: /opt
-            group: prometheus
-            owner: prometheus
-            remote_src: yes
-
-        - name: Create a symbolic link to Prometheus
-          file:
-            src: "/opt/{{ prometheus_tarball }}"
-            dest: /opt/prometheus
-            owner: prometheus
-            state: link
-      when: not binary.stat.exists
-
-    - name: Copy the configuration
-      file:
-        src: "/opt/{{ prometheus_tarball }}"
-        dest: /opt/prometheus
+    - name: Create Prometheus directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
         owner: prometheus
-        state: link
+        group: prometheus
+      loop:
+        - "{{ prom_dir }}"
+        - "{{ prom_data }}"
 
-    - name: Copy the configuration
-      copy:
-        remote_src: yes
-        src: /opt/prometheus/prometheus.yml 
-        dest: /etc/prometheus.yml
+- name: Download or update Prometheus
+  ansible.builtin.include_tasks: prom_download.yml
+
+- name: Configure Prometheus
+  block: 
+    - name: Copy the configuration file
+      ansible.builtin.template:
+        src: prometheus.yml.j2
+        dest: "{{ prom_config }}" 
         owner: prometheus
+        group: prometheus
+        mode: "0640"
 
-    - name: Firewall set for 9100 to be accessible
-      firewalld:
-        port: 9090/tcp
+    - name: Open firewall for Prometheus (port {{ prom_port }})
+      ansible.builtin.firewalld:
+        port: "{{ prom_port }}/tcp"
         permanent: yes
         state: enabled
         immediate: yes
       failed_when: false
       ignore_errors: true
 
-    - name: Copy over the service file
-      copy:
-        src: prometheus.service
+    - name: Copy Prometheus service file
+      ansible.builtin.template:
+        src: prometheus.service.j2
         dest: /etc/systemd/system/prometheus.service
+        owner: root
+        group: root
+        mode: "0644"
 
-    - name: Start the prometheus
-      systemd:
-        name: prometheus
-        state: started
-        daemon_reload: yes
-        enabled: yes
-  become: true
-  notify: Restart prometheus
-
+  notify: prometheus_restart
 

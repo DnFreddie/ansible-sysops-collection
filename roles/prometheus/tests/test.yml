@@ -1,5 +1,7 @@
----
-- hosts: localhost
-  remote_user: root
-  roles:
-    - prometheus
+- name: Install Latest Prometheus
+  hosts: all
+  gather_facts: true 
+  become: true
+  roles: 
+    - prometheus 
+
