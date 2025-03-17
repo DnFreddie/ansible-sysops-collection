@@ -1,0 +1,33 @@
+---
+
+dependency:
+  name: galaxy
+driver:
+  name: ${LSR_MOLECULE_DRIVER:-podman}
+platforms:
+  - name: instance
+    image: docker.io/geerlingguy/docker-${MOLECULE_DISTRO:-rockylinux9}-ansible:${MOLECULE_TAG:-latest}
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    user: "test"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+  - name: ubuntu
+    image: docker.io/geerlingguy/docker-${MOLECULE_DISTRO:-ubuntu2204}-ansible:${MOLECULE_TAG:-latest}
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    user: "test"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+provisioner:
+  name: ansible
+  log: true
+  playbooks:
+    converge: ../../tests/test.yml
+    verify : ../../tests/verify.yml
+
+

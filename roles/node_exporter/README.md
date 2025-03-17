@@ -1,16 +1,23 @@
 node_exporter
 =========
-
-Installs and setups node_exporter
-
-
+Installs and setups node_exporter as a service
+To test run `molecule test`
 
 Role Variables
 --------------
-
-The url to the offical node_exporter release (*the defualt version is 1.8.2*)
-```yml
-node_exporter_url: "https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz"
+By default it uses the latest release
+```yaml
+url: "https://api.github.com/repos/prometheus/node_exporter/releases/latest
+"
+config: 
+  file: "/etc/sysconfig/node_exporter"
+  templ: "node_exporter.j2"
+  service_templ: "node_exporter.service.j2"
+dir: 
+  install: "/opt/node_exporter"
+  data: "/var/lib/node_exporter/textfile_collector"
+node_port: 9100
+update: false
 
 ```
 Dependencies
@@ -20,13 +27,12 @@ None
 
 Example Playbook
 ----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-```yml
+With the default  configuration u have to run is as root 
+```yaml
 - hosts: servers
+  become: true
   roles:
-     - { role: node_exporterde, node_exporter_url: "url" }
+     -  role: node_exporter
 ```
 
 License
@@ -38,3 +44,5 @@ Author Information
 ------------------
 
 DnFreddie
+
+

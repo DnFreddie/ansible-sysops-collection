@@ -1,76 +1,57 @@
-- block:
-    - name: Create a group for node_exporter
-      group:
+- name: Download or update Node_exporter
+  ansible.builtin.include_tasks: download_release.yml
+- name: Setup Node_exporter
+  block:
+    - name: Create a group for Node_exporter
+      ansible.builtin.group:
         name: node_exporter
-        system: true
-
-    - name: Make a user for node_exporter
-      user:
+        system: yes
+    - name: Make a user for Node_exporter
+      ansible.builtin.user:
         name: node_exporter
         shell: /sbin/nologin
-        system: true
+        system: yes
         create_home: no
-        group: node_exporter  
+        group: node_exporter
+    - name: Create Node_exporter directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: node_exporter
+        group: node_exporter
+        mode: "0755"
+      loop: "{{ dir.values() }}"
 
-    - name: Check if Node Exporter binary exists
-      stat:
-        path: /opt/node_exporter/node_exporter  
-      register: binary
+- name: Configure Node_exporter
+  block:
+    - name: Ensure the directory for the configuration file exists
+      ansible.builtin.file:
+        path: "{{ config.file | dirname }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
 
-    - block: 
-        - name: Unarchive a file that needs to be downloaded 
-          unarchive:
-            src: "{{ node_exporter_url }}"
-            dest: /opt
-            group: node_exporter
-            owner: node_exporter
-            remote_src: yes
-
-        - name: Create a symbolic link to node_exporter
-          file:
-            src: "/opt/{{ node_exporter_tarball }}"
-            dest: /opt/node_exporter
-            owner: node_exporter
-            state: link
-          notify: Restart node_exporter
-      when: not binary.stat.exists
-
-    - name: Firewall set for 9100 to be accessible
-      firewalld:
-        port: 9100/tcp
+    - name: Copy the configuration file
+      ansible.builtin.template:
+        src: "{{ config.templ}}"
+        dest: "{{ config.file }}"
+        owner: node_exporter
+        group: node_exporter
+        mode: "0640"
+    - name: Open firewall for Node_exporter (port {{ node_port }})
+      ansible.builtin.firewalld:
+        port: "{{ node_port }}/tcp"
         permanent: yes
         state: enabled
         immediate: yes
       failed_when: false
-      ignore_errors: true
-
-    - name: Copy over the service file
-      copy:
-        src: node_exporter.service
+    - name: Copy Node_exporter service file
+      ansible.builtin.template:
+        src: "{{ config.service_templ}}"
         dest: /etc/systemd/system/node_exporter.service
-
-    - name: Create directory for textfile collector
-      file:
-        path: /var/lib/node_exporter/textfile_collector
-        state: directory
-        owner: node_exporter
-        group: node_exporter
-        mode: '0755'
-
-    - name: Create sysconfig file for node_exporter
-      file:
-        path: /etc/sysconfig/node_exporter
-        state: touch
-        owner: node_exporter
-        group: node_exporter
-        mode: '0644'
-
-    - name: Start the node_exporter
-      systemd:
-        name: node_exporter
-        state: started
-        daemon_reload: yes
-        enabled: yes
-  become: true  
-  notify: Restart node_exporter
-
+        owner: root
+        group: root
+        mode: "0644"
+  notify: node_restart
+  when: not update | bool

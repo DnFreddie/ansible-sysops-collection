@@ -1,0 +1,36 @@
+- name: Verify 
+  hosts: all
+  become: true
+  tasks:
+    - name: Include default vars
+      ansible.builtin.include_vars:
+        dir: '{{ lookup("env", "MOLECULE_PROJECT_DIRECTORY") }}/defaults/'
+        extensions:
+          - 'yml'
+
+    - name: Ensure that the Node service is started
+      ansible.builtin.service:
+        name: node_exporter
+        state: started
+        enabled: true
+      check_mode: yes
+      register: service_state
+      failed_when: service_state.failed
+
+    - name: Ensure that the files and directories exist
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      register: item_stat
+      loop: "{{ dir.values() }}"
+
+    - name: Fail if any required file or directory is missing
+      ansible.builtin.fail:
+        msg: "The file or directory {{ item }} is missing!"
+      when: item_stat.results | selectattr('stat.exists', 'equalto', false) | list | length > 0
+      loop: "{{ dir.values() }}"
+
+    - name: Check if port {{ prom_port }} is open
+      ansible.builtin.wait_for:
+        port: "{{ node_port }}"
+        timeout: 5
+

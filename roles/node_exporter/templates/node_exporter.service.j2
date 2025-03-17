@@ -1,0 +1,13 @@
+[Unit]
+Description=Node Exporter
+
+[Service]
+User=node_exporter
+Group=node_exporter
+EnvironmentFile= {{ config.file }}
+ExecStart={{dir.install}}/node_exporter --web.listen-address="0.0.0.0:{{ node_port }}"\
+        --collector.textfile.directory {{ dir.data }}  $OPTIONS
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,5 +1,7 @@
----
-- hosts: localhost
-  remote_user: root
-  roles:
-    - roles/node_exporter
+- name: Install Latest Node_exporter
+  hosts: all
+  gather_facts: true 
+  become: true
+  roles: 
+    - node_exporter
+
