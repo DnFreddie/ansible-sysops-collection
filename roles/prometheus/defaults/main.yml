@@ -3,3 +3,4 @@ prom_config: "/etc/prometheus.yml"
 prom_dir: "/opt/prometheus"
 prom_port: 9090 
 prom_data: "/opt/prometheus/data"
+prom_update: false

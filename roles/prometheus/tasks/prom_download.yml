@@ -1,7 +1,6 @@
 ---
 - name: Check if Prometheus is already running
   ansible.builtin.service_facts:
-
 - name: Download Prometheus if service doesn't exist or update is requested
   block:
     - name: Fetch latest Prometheus release
@@ -9,19 +8,25 @@
         url: "{{ prom_url }}"
         return_content: true
       register: release_data
-
     - name: Extract download URL
       ansible.builtin.set_fact:
         prom_release: >-
-          {{ release_data.json.assets | selectattr('name', 'search', 'linux-amd64.tar.gz') 
-          | map(attribute='browser_download_url') | first | default('') }}
-      no_log: true  
-
+          {{ release_data.json.assets | selectattr('name', 'search', 'linux-amd64.tar.gz')  | map(attribute='browser_download_url') | first | default('') }}
+      no_log: true
     - name: Fail if Prometheus download URL is empty
       ansible.builtin.fail:
         msg: "Failed to fetch Prometheus download URL"
       when: prom_release == ""
-
+    - name: Remove existing Prometheus binary
+      ansible.builtin.file:
+        path: "{{ prom_dir }}/prometheus"
+        state: absent
+      when: prom_update | bool
+    - name: Create a {{ prom_dir }}
+      file:
+        state: directory
+        mode: "0755"
+        path: "{{ prom_dir }}"
     - name: Download and extract Prometheus
       ansible.builtin.unarchive:
         src: "{{ prom_release }}"
@@ -31,9 +36,6 @@
           - "--strip=1"
           - "--no-anchored"
           - "prometheus"
-  when: 
-    (ansible_facts['services'].get('prometheus.service', {}).get('status', 'not-found') == 'not-found')
-    or (prom_update | default(false) | bool)
+        creates: "{{ prom_dir }}/prometheus"
+  when: (ansible_facts['services'].get('prometheus.service', {}).get('status', 'not-found') == 'not-found') or (prom_update | default(false) | bool)
   notify: prometheus_restart
-
-

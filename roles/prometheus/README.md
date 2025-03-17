@@ -12,6 +12,8 @@ prom_config: "/etc/prometheus.yml"
 prom_dir: "/opt/prometheus"
 prom_port: 9090
 prom_data: "/opt/prometheus/data"
+# Only updates the binary to the latest realse and  restarts the serivce
+prom_update: false
 ```
 Dependencies
 ------------
@@ -20,8 +22,8 @@ None
 
 Example Playbook
 ----------------
-With the current configuration u have to run is as root 
-```yml
+With the default  configuration u have to run is as root 
+```yaml
 - hosts: servers
   become: true
   roles:
