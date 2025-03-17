@@ -7,13 +7,20 @@ Role Variables
 --------------
 By default it uses the latest release
 ```yaml
-prom_url: "https://api.github.com/repos/prometheus/prometheus/releases/latest"
-prom_config: "/etc/prometheus.yml"
-prom_dir: "/opt/prometheus"
+
+url: "https://api.github.com/repos/prometheus/prometheus/releases/latest"
+config:
+  file: "/etc/prometheus.yml"
+  templ: prometheus.yml.j2
+  service_templ: prometheus.service.j2
+
+dir:
+  install: "/opt/prometheus"
+  data: "/opt/prometheus/data"
 prom_port: 9090
-prom_data: "/opt/prometheus/data"
 # Only updates the binary to the latest realse and  restarts the serivce
-prom_update: false
+update: false
+
 ```
 Dependencies
 ------------

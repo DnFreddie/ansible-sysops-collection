@@ -1,23 +1,19 @@
-- name: Verify YAML
+- name: Verify 
   hosts: all
   become: true
-
-  vars: 
-    prom_dirs:
-      prom_dir: "/opt/prometheus"
-      prom_config: "/etc/prometheus.yml"
-      prom_data: "/opt/prometheus/data"
-      prom_binary: "/opt/prometheus/prometheus"
-    prom_port: 9090
-
   tasks:
+    - name: Include default vars
+      ansible.builtin.include_vars:
+        dir: '{{ lookup("env", "MOLECULE_PROJECT_DIRECTORY") }}/defaults/'
+        extensions:
+          - 'yml'
+
     - name: Ensure that the Prometheus service is started
       ansible.builtin.service:
         name: prometheus
         state: started
         enabled: true
       check_mode: yes
-      become: yes
       register: service_state
       failed_when: service_state.failed
 
@@ -25,16 +21,17 @@
       ansible.builtin.stat:
         path: "{{ item }}"
       register: item_stat
-      loop: "{{ prom_dirs.values() }}"
+      loop: "{{ dir.values() }}"
 
     - name: Fail if any required file or directory is missing
       ansible.builtin.fail:
         msg: "The file or directory {{ item }} is missing!"
       when: item_stat.results | selectattr('stat.exists', 'equalto', false) | list | length > 0
-      loop: "{{ prom_dirs.values() }}"
+      loop: "{{ dir.values() }}"
 
     - name: Check if port {{ prom_port }} is open
       ansible.builtin.wait_for:
         port: "{{ prom_port }}"
         timeout: 5
+
 

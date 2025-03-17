@@ -1,6 +1,5 @@
----
 - name: Download or update Prometheus
-  ansible.builtin.include_tasks: prom_download.yml
+  ansible.builtin.include_tasks: download_release.yml
 - name: Setup Prometheus
   block:
     - name: Create a group for Prometheus
@@ -21,15 +20,22 @@
         owner: prometheus
         group: prometheus
         mode: "0755"
-      loop:
-        - "{{ prom_dir }}"
-        - "{{ prom_data }}"
+      loop: "{{ dir.values() }}"
+
 - name: Configure Prometheus
   block:
+    - name: Ensure the directory for the configuration file exists
+      ansible.builtin.file:
+        path: "{{ config.file | dirname }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
     - name: Copy the configuration file
       ansible.builtin.template:
-        src: prometheus.yml.j2
-        dest: "{{ prom_config }}"
+        src: "{{ config.templ }}"
+        dest: "{{ config.file }}"
         owner: prometheus
         group: prometheus
         mode: "0640"
@@ -40,13 +46,13 @@
         state: enabled
         immediate: yes
       failed_when: false
-      ignore_errors: true
     - name: Copy Prometheus service file
       ansible.builtin.template:
-        src: prometheus.service.j2
+        src: "{{ config.service_templ}}"
         dest: /etc/systemd/system/prometheus.service
         owner: root
         group: root
         mode: "0644"
   notify: prometheus_restart
-  when: not prom_update | bool
+  when: not update | bool
+
