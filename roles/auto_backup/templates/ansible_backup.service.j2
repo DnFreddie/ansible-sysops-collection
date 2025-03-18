@@ -1,0 +1,13 @@
+[Unit]
+Description=Ansible Backup
+Wants=ansible_backup.timer
+
+[Service]
+Type=oneshot
+WorkingDirectory={{ playbook | dirname }}
+Environment="{{ play_env }}"
+ExecStart=/usr/bin/ansible-playbook {{ playbook }}
+
+[Install]
+WantedBy=default.target
+

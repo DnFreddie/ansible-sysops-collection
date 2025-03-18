@@ -1,0 +1,23 @@
+---
+backup_dir: "{{ ansible_env.HOME }}/Documents/Backup"
+# abs path to the playbook that will run as timer
+playbook: "/home/aura/playbooks/backup_ansible.yml"
+play_env: ""
+to_backup:
+  - Documents
+  - .dotfiles
+  - github.com
+service_templates:
+  - ansible_backup.service
+  - ansible_backup.timer
+commit_message: Ansible Backup {{ now(utc=true, fmt='%Y-%m-%d %H:%M:%S') }}
+rsync_flags:
+  - "--exclude=.git"
+  - "--exclude=static"
+  - "--exclude=g"
+  - "--exclude=Library"
+  - "--exclude=node_modules"
+  - "--exclude=venv"
+  - "--exclude=__pycache__"
+  - "--exclude=*.log"
+  - "--exclude=*.tmp"

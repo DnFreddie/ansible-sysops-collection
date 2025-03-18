@@ -1,0 +1,44 @@
+---
+- name: Backup {{ now(utc=true, fmt='%Y-%m-%d %H:%M:%S') }}
+  block:
+    - name: Enable systemd timer
+      block:
+        - name: Ensure systemd directory exists
+          file:
+            path: "{{ systemd_dir }}"
+            state: directory
+            mode: "0755"
+        - name: Copy systemd service and timer files
+          template:
+            src: "templates/{{ item }}.j2"
+            dest: "{{ systemd_dir }}/{{ item }}"
+            mode: "0644"
+          loop: "{{ service_templates }}"
+        - name: Enable and start systemd timer
+          systemd:
+            name: "ansible_backup.timer"
+            state: started
+            daemon_reload: true
+            enabled: true
+            scope: user
+      delegate_to: localhost
+    - name: Ensure backup directory exists
+      file:
+        path: "{{ backup_dir }}"
+        state: directory
+        mode: "0750"
+    - name: Synchronize backup directories
+      ansible.posix.synchronize:
+        src: "{{ lookup('env', 'HOME') }}/{{ item }}"
+        dest: "{{ backup_dir }}"
+        rsync_opts: "{{ rsync_flags }}"
+      delegate_to: localhost
+      loop: "{{ to_backup }}"
+    - name: Install GitPython on target
+      ansible.builtin.pip:
+        name: gitpython
+        state: present
+    - name: Commit changes
+      dnfreddie.sysops.git_tools.git_commit:
+        repo_path: "{{ backup_dir }}"
+        commit_message: "{{ commit_message }}"

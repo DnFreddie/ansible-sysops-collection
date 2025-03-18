@@ -1,0 +1,11 @@
+[Unit]
+Description=starts ansible_backup playbook
+Requires=ansible_backup.service
+
+[Timer]
+Unit=ansible_backup.service
+OnCalendar=07:30,23:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
