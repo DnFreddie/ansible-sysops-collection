@@ -1,3 +1,5 @@
-python:
-  - gitpython
+collections:
+  - name: dnfreddie.sysops
+    type: dir
+    source: .
 
