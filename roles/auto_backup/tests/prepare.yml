@@ -1,0 +1,41 @@
+- name: Prepare
+  hosts: all
+  become: true
+  vars:
+    to_backup:
+      - "/home/rocky/backups"
+      - "/home/rocky/logs"
+  tasks:
+    - name: Debian-specific setup
+      #    - name: Update package cache
+      #      block:
+      #        - name: Update package cache (Debian-based)
+      #          apt:
+      #            update_cache: yes
+      #          when: ansible_facts['os_family'] == 'Debian'
+      #
+      #        - name: Update package cache (RedHat-based)
+      #          dnf:
+      #            update_cache: yes
+      #          when: ansible_facts['os_family'] == 'RedHat'
+      #    - name: Install pip and git
+      #      package:
+      #        name:
+      #          - python3-pip
+      #          - git
+      #        state: present
+
+      block:
+        - name: Create user test with home directory
+          user:
+            name: rocky
+            state: present
+            create_home: yes
+        - name: Create backup directories for ubu
+          file:
+            path: "{{ item }}"
+            state: directory
+            owner: rocky
+            group: rocky
+            mode: '0755'
+          loop: "{{ to_backup }}"

@@ -1,5 +1,8 @@
 ---
-- hosts: localhost
-  remote_user: root
+- hosts: ubuntu
+  become_user: ubuntu
+  remote_user: rocky
+  vars:
+    backup_target: rocky
   roles:
-    - auto_backup
+    - dnfreddie.sysops.auto_backup

@@ -3,7 +3,10 @@
   block:
     - name: Enable systemd timer
       block:
-        - name: Ensure systemd directory exists
+        - name: Determine systemd directory
+          set_fact:
+            systemd_dir: "{{ ansible_env.HOME }}/.config/systemd/user"
+        - name: Ensure {{ systemd_dir }} exist
           file:
             path: "{{ systemd_dir }}"
             state: directory
@@ -21,7 +24,8 @@
             daemon_reload: true
             enabled: true
             scope: user
-      delegate_to: localhost
+      delegate_to: "{{ backup_target }}"
+      run_once: true
     - name: Ensure backup directory exists
       file:
         path: "{{ backup_dir }}"
@@ -32,7 +36,7 @@
         src: "{{ lookup('env', 'HOME') }}/{{ item }}"
         dest: "{{ backup_dir }}"
         rsync_opts: "{{ rsync_flags }}"
-      delegate_to: localhost
+      delegate_to: "{{ backup_target }}"
       loop: "{{ to_backup }}"
     - name: Install GitPython on target
       ansible.builtin.pip:

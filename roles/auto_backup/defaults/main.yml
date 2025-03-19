@@ -1,4 +1,5 @@
 ---
+backup_target: localhost
 backup_dir: "{{ ansible_env.HOME }}/Documents/Backup"
 # abs path to the playbook that will run as timer
 playbook: "/home/aura/playbooks/backup_ansible.yml"
