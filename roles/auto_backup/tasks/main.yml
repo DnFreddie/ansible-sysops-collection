@@ -1,22 +1,22 @@
----
 - name: Backup {{ now(utc=true, fmt='%Y-%m-%d %H:%M:%S') }}
   block:
     - name: Enable systemd timer
       block:
-        - name: Determine systemd directory
-          set_fact:
-            systemd_dir: "{{ ansible_env.HOME }}/.config/systemd/user"
-        - name: Ensure {{ systemd_dir }} exist
+        - name: Ensure systemd directory exists
           file:
-            path: "{{ systemd_dir }}"
+            path: "{{ (lookup('env', 'HOME') if backup_target == 'localhost' else ansible_env.HOME) + '/.config/systemd/user' }}"
             state: directory
             mode: "0755"
+          delegate_to: "{{ backup_target }}"
+
         - name: Copy systemd service and timer files
           template:
             src: "templates/{{ item }}.j2"
-            dest: "{{ systemd_dir }}/{{ item }}"
+            dest: "{{ (lookup('env', 'HOME') if backup_target == 'localhost' else ansible_env.HOME) + '/.config/systemd/user/' + item }}"
             mode: "0644"
           loop: "{{ service_templates }}"
+          delegate_to: "{{ backup_target }}"
+
         - name: Enable and start systemd timer
           systemd:
             name: "ansible_backup.timer"
@@ -24,25 +24,29 @@
             daemon_reload: true
             enabled: true
             scope: user
-      delegate_to: "{{ backup_target }}"
-      run_once: true
+          delegate_to: "{{ backup_target }}"
+
     - name: Ensure backup directory exists
       file:
         path: "{{ backup_dir }}"
         state: directory
         mode: "0750"
+
     - name: Synchronize backup directories
       ansible.posix.synchronize:
-        src: "{{ lookup('env', 'HOME') }}/{{ item }}"
+        src: "{{ (lookup('env', 'HOME') if backup_target == 'localhost' else ansible_env.HOME) + '/' + item }}"
         dest: "{{ backup_dir }}"
         rsync_opts: "{{ rsync_flags }}"
       delegate_to: "{{ backup_target }}"
       loop: "{{ to_backup }}"
+
     - name: Install GitPython on target
       ansible.builtin.pip:
         name: gitpython
         state: present
+
     - name: Commit changes
       dnfreddie.sysops.git_tools.git_commit:
         repo_path: "{{ backup_dir }}"
         commit_message: "{{ commit_message }}"
+
